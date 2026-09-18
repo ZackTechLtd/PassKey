@@ -68,29 +68,22 @@ Source reviewed at `/Users/martinbelton/Documents/XCodeProjects/PasswordLetterAp
 
 ## 5. Implementation steps
 
-### Step 1 — README reminder (`README.md`)
-
-Add the run commands printed by the installer:
-
-```bash
-cd PassIndex
-npm run android
-npm run ios
-npm run web
-```
-
-Plus a short note that `npm run ios` requires Xcode 26.4+ (so it's not a surprise later).
-
-### Step 2 — Simplify to a single screen
+### Step 1 — Simplify to a single screen & basic form UI
 
 - Delete `src/app/explore.tsx` and the `NativeTabs` wiring
   (`src/components/app-tabs.tsx`, `app-tabs.web.tsx`).
 - Slim `src/app/_layout.tsx` to the root layout: keep `ThemeProvider` + splash
   screen handling, drop the tab navigator.
-- Rebuild `src/app/index.tsx` as the PassIndex screen.
+- Rebuild `src/app/index.tsx` as the PassIndex screen with **basic form UI only** (no logic yet):
+  - Password field (masked) with reveal toggle + paste button placeholder
+  - Positions input field (comma-separated, e.g., "3,5,7")
+  - Result display area (empty initially)
+  - Copy result button placeholder
+  - Clear all button
 - Bonus: avoids the `unstable-native-tabs` API entirely.
+- **Verification**: `npm run web` shows the form; no logic wired up yet.
 
-### Step 3 — Core logic module (`src/lib/extract-letters.ts`)
+### Step 2 — Core logic module (`src/lib/extract-letters.ts`)
 
 Pure, testable functions mirroring the Swift behavior, but safe:
 
@@ -105,7 +98,7 @@ Pure, testable functions mirroring the Swift behavior, but safe:
   (`Array.from` / `Intl.Segmenter`) so positions behave like the Swift original
   (character-based `String.Index`).
 
-### Step 4 — The screen (`src/app/index.tsx`)
+### Step 3 — The screen (`src/app/index.tsx`)
 
 ```
 Password field (masked) ──► Positions input (3,5,7) ──► Letter tiles (3rd → x · 5th → y · 7th → z)
@@ -126,7 +119,7 @@ Password field (masked) ──► Positions input (3,5,7) ──► Letter tiles
 - Reuse the template's `ThemedText` / `ThemedView` / theme constants so dark mode keeps working.
 - Single panel (confirmed decision).
 
-### Step 5 — Tests
+### Step 4 — Tests
 
 #### Setup (per the Expo v57 unit-testing docs)
 
@@ -163,7 +156,7 @@ Password field (masked) ──► Positions input (3,5,7) ──► Letter tiles
 - Empty password → no result
 - Clipboard functions mocked; auto-clear timer tested with Jest fake timers
 
-### Step 6 — Verification
+### Step 5 — Verification
 
 - `npm test` (unit + component tests)
 - `npx tsc --noEmit` and `npm run lint`
