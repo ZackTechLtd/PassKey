@@ -1,4 +1,4 @@
-import { AppState, AppStateStatus, Keyboard, Platform, Pressable, StyleSheet, TextInput, useColorScheme } from 'react-native';
+import { AppState, AppStateStatus, Keyboard, Platform, Pressable, StyleSheet, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useRef, useState } from 'react';
 import * as Clipboard from 'expo-clipboard';
@@ -12,40 +12,37 @@ export default function HomeScreen() {
   const [password, setPassword] = useState('');
   const [positions, setPositions] = useState('');
   const [revealPassword, setRevealPassword] = useState(false);
-  const [result, setResult] = useState<{ letters: string[]; outOfRange: number[]; invalid: string[] } | null>(null);
-  const [autoClearTimer, setAutoClearTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const autoClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const passwordInputRef = useRef<TextInput>(null);
   const positionsInputRef = useRef<TextInput>(null);
 
-  const computeResult = () => {
-    const res = extractLettersWithValidation(password, positions);
-    setResult(res);
-    if (res.letters.length > 0) {
-      if (autoClearTimer) clearTimeout(autoClearTimer);
-      const timer = setTimeout(() => {
-        setResult(null);
-        setPositions('');
-      }, 30000);
-      setAutoClearTimer(timer);
-    }
-  };
+  const result = extractLettersWithValidation(password, positions);
+  const hasResult = result.letters.length > 0;
+  const hasErrors = result.outOfRange.length > 0 || result.invalid.length > 0;
 
   useEffect(() => {
-    computeResult();
-  }, [password, positions]);
+    if (hasResult) {
+      if (autoClearTimerRef.current) clearTimeout(autoClearTimerRef.current);
+      autoClearTimerRef.current = setTimeout(() => {
+        setPositions('');
+      }, 30000);
+    }
+    return () => {
+      if (autoClearTimerRef.current) clearTimeout(autoClearTimerRef.current);
+    };
+  }, [hasResult]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
       if (nextAppState === 'background') {
         setPassword('');
         setPositions('');
-        setResult(null);
         setRevealPassword(false);
-        if (autoClearTimer) clearTimeout(autoClearTimer);
+        if (autoClearTimerRef.current) clearTimeout(autoClearTimerRef.current);
       }
     });
     return () => subscription.remove();
-  }, [autoClearTimer]);
+  }, []);
 
   const handlePaste = async () => {
     const text = await Clipboard.getStringAsync();
@@ -65,18 +62,14 @@ export default function HomeScreen() {
   const handleClearAll = () => {
     setPassword('');
     setPositions('');
-    setResult(null);
     setRevealPassword(false);
-    if (autoClearTimer) clearTimeout(autoClearTimer);
+    if (autoClearTimerRef.current) clearTimeout(autoClearTimerRef.current);
     Keyboard.dismiss();
   };
 
   const handleRevealToggle = () => {
     setRevealPassword(!revealPassword);
   };
-
-  const hasResult = result && result.letters.length > 0;
-  const hasErrors = result && (result.outOfRange.length > 0 || result.invalid.length > 0);
 
   return (
     <ThemedView style={styles.container}>
