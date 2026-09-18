@@ -13,18 +13,8 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 2. Start the app
 
    ```bash
-   npm run web
+   npx expo start
    ```
-
-   ```bash
-   npm run android
-   ```
-
-   ```bash
-   npm run ios
-   ```
-
-   > **Note:** `npm run ios` requires **Xcode 26.4+** (iOS 16.4+). Older Xcode versions will fail to build.
 
 In the output, you'll find options to open the app in a
 

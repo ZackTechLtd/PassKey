@@ -141,3 +141,12 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Expo & React Native specific
+.expo/
+web-build/
+*.git/
+
+# Xcode / iOS (if local native builds are generated later)
+*.xcworkspace
+*.xcuserdata
